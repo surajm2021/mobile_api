@@ -2,14 +2,10 @@ from datetime import datetime
 import math
 import random
 
-
 import requests
-import json
-from django.contrib.auth.decorators import login_required
 from rest_framework.authtoken.models import Token
 
 from django.shortcuts import render
-from django.shortcuts import HttpResponse
 from django.contrib.auth.models import User
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -18,9 +14,9 @@ from rest_framework.response import Response
 from .models import Employee, Otp
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout as auth_logout
+from channel.models import channel_model
+from video.models import video_class
 
-
-# Create your views here.
 
 def home(request):
     return render(request, 'main_app/home.html')
@@ -106,12 +102,12 @@ def register(request):
                     if obj.get_time_diff() > 3600:
                         obj = Otp(user=user, attempts=5, OTP=OTP)
                         obj.save()
-                    text_message='your OTP is : '+OTP
+                    text_message = 'your OTP is : ' + OTP
 
                     data = {'message': 'user registration successful', 'error': 'False', 'token': token.key}
                     URL = 'https://www.sms4india.com/api/v1/sendCampaign'
                     response = sendPostRequest(URL, '600XK5ONNJVYPIO66ZHUTX4PXBCGA7NT', '9TFM3V54JHDYK127', 'stage',
-                                               '+91'+phone_no, '012345', text_message)
+                                               '+91' + phone_no, '012345', text_message)
 
                     print(response.text)
                 else:
@@ -185,7 +181,7 @@ def verify_opt(request):
             print(otp_object.OTP)
             print(otp_object.attempts)
             print(otp)
-            if otp_object.get_time_diff() >1800 :
+            if otp_object.get_time_diff() > 1800:
                 message = 'Otp expired try later'
                 username = 'empty'
                 phone_no = 'empty'
@@ -200,7 +196,7 @@ def verify_opt(request):
                 data = {'message': message, 'username': username, 'phone_no': phone_no, 'error': error, }
                 return Response(data)
             elif int(otp_object.OTP) == int(otp):
-                otp_object.is_verify="True"
+                otp_object.is_verify = "True"
                 username = user.username
                 message = "Otp successfull verify " + username
                 phone_no = user.employee.phone_no
@@ -225,7 +221,6 @@ def verify_opt(request):
             error = 'True'
             data = {'message': message, 'username': username, 'phone_no': phone_no, 'error': error, }
             return Response(data)
-
 
 
 @api_view(['POST'])
@@ -261,3 +256,53 @@ def mobile_check(request):
         data = {"error": error, "message": message, "token": token}
         return Response(data)
     return Response()
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def delete_user(request):
+    data = {}
+    if request.method == "POST":
+        token = request.POST.get('token')
+        if Token.objects.filter(key=token):
+            token_obj = Token.objects.get(key=token)
+            user = token_obj.user
+            print(user.username)
+            employee = Employee.objects.get(user=user)
+            if not user.employee.channel_id == 0:
+                if channel_model.objects.filter(id=user.employee.channel_id):
+                    channel_obj = channel_model.objects.get(id=user.employee.channel_id)
+                    channel_id = channel_obj.id
+                    channel = channel_model.objects.get(id=channel_id)
+                    video_ids = channel.video_id
+                    print(video_ids)
+                    video_list = video_ids.split(",")
+                    print(video_list)
+                    video_list = [s for s in video_list if s.isdigit()]
+                    for id in video_list:
+                        print(id)
+                        if video_class.objects.filter(id=id):
+                            video_obj = video_class.objects.get(id=id)
+                            video_obj.delete()
+                        else:
+                            print(f'{id},video not found')
+                    channel.delete()
+                    user.delete()
+                    message = 'channel delete successfull with user'
+                    error = 'False'
+                    data = {'message ': message, 'error': error}
+                else:
+                    message = 'channel not found '
+                    error = 'True'
+                    data = {'message': message, 'error': error}
+            else:
+                user.delete()
+                message = 'user delete succssfull user has no any channel found'
+                error = 'False'
+                data = {'message': message, 'error': error}
+        else:
+
+            message = 'token not valid'
+            error = 'True'
+            data = {'message': message, 'error': error}
+    return Response(data)

@@ -3,7 +3,6 @@ from django.db import models
 
 
 class video_class(models.Model):
-    # video_id = models.IntegerField(primary_key=True)
     channel_id = models.IntegerField(null=True)
     video = models.FileField(upload_to='videous')
     length_of_video = models.IntegerField()
