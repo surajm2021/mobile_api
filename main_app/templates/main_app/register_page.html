@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+
+    {% load static %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.css"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <title>Details</title>
+    <style type="text/css">
+    	.card-header h3{
+
+    		color: #fff
+    	}
+    	
+    	.navbar h3{
+
+    		color: #fff;
+    		font-family: Arial, Helvetica, sans-serif;
+
+		
+    </style>
+</head>
+<body>
+
+<div class="container py-5 ">
+    <div class="row">
+        <div class="col-md-10">
+          
+            <div class="card card-outline-secondary">
+                <div class="card-header bg-secondary">
+                    <h3 class="mb-0">User Deatails</h3>
+                </div>
+                <div class="card-body">
+                    <form action="/register/" method="POST" class="form" role="form" autocomplete="off">
+                        {% csrf_token %}
+
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label form-control-label">Username</label>
+                            <div class="col-lg-9">
+                                <input class="form-control" name="username" type="text" placeholder="username">
+                            </div>
+                        </div>
+  
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label form-control-label">Email</label>
+                            <div class="col-lg-9">
+                                <input class="form-control" name="email" type="email" placeholder="email@gmail.com">
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label form-control-label">Mobile Number</label>
+                            <div class="col-lg-9">
+                                <input class="form-control" name="phone_no" type="number" placeholder="i.e 10 digit mobile number">
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label form-control-label">Password</label>
+                            <div class="col-lg-9">
+                                <input class="form-control" name="password" type="password" placeholder="Enter password">
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label form-control-label">Re-Password</label>
+                            <div class="col-lg-9">
+                                <input class="form-control" name="re_password" type="password" placeholder="reenter your password">
+                            </div>
+                        </div>
+                               
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label form-control-label"></label>
+                            <div class="col-lg-9">
+                                       
+                                <input type="submit" class="btn btn-primary btn-success" value="sign up">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="page-footer font-small blue ">
+
+</footer>
+<script>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js">
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js">
+  </script>
+</body>
+</html>

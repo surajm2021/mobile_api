@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+</head>
+<body>
+
+    <h1>
+        Welcome my developer.
+    </h1>
+
+    {% if request.user.is_authenticated %}
+    <h1>User Loging</h1>
+        <form action="/logout_user/" method="GET">
+        <button type="submit">Logout</button>
+    </form>
+    <br>
+    {% else %}
+     <h1>User Logout</h1>
+        <form action="/login_user/" method="GET">
+        <button type="submit">Enter here to login</button>
+       </form>
+    <br>
+        <form action="/register_user/" method="GET">
+        <button type="submit">Enter here to register</button>
+        </form>
+   {% endif %}
+
+</body>
+</html>
