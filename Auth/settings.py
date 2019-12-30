@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'main_app',
     'rest_framework',
     'rest_framework.authtoken',
+    'django_cleanup.apps.CleanupConfig',
     'video.apps.VideoConfig',
     'channel.apps.ChannelConfig',
 ]

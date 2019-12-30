@@ -7,20 +7,22 @@ from django.utils.timezone import utc
 class Employee(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone_no = models.IntegerField()
-    application_id = models.CharField(max_length=50,null=True)
+    application_id = models.CharField(max_length=50, null=True)
     is_verify = models.BooleanField(default=False)
-    tags = models.CharField(max_length=50,null=True)
-    channel_id = models.IntegerField(default=0,null=True)
+    tags = models.CharField(max_length=50, null=True)
+    channel_id = models.IntegerField(default=0, null=True)
+    liked = models.CharField(max_length=255, default="")
+    disliked = models.CharField(max_length=255, default="")
+
     def __str__(self):
         return self.user.username
 
 
 class Otp(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE,null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
     OTP = models.IntegerField(null=True)
     attempts = models.IntegerField(default=5)
     time_generate_otp = models.DateTimeField(auto_now_add=True, blank=True)
-
 
     def get_time_diff(self):
         if self.time_generate_otp:
@@ -30,8 +32,3 @@ class Otp(models.Model):
 
     def __str__(self):
         return self.user.username
-
-
-
-
-

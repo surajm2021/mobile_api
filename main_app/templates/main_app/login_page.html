@@ -35,7 +35,7 @@
                 <div class="card-body">
                     <form action="/login_user/" method="POST" class="form" role="form" autocomplete="off">
 
-
+                        	{% csrf_token %}
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label form-control-label">Username</label>
                             <div class="col-lg-9">

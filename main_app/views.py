@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 import math
 import random
 
@@ -17,9 +17,69 @@ from django.contrib.auth import logout as auth_logout
 from channel.models import channel_model
 from video.models import video_class
 
+from pymongo import MongoClient
 
+
+def logger_history_function(username, activity):
+    flag = 0
+    print('calll')
+    if User.objects.filter(username=username):
+        print('username found in database')
+        flag = 1
+
+    if Token.objects.filter(key=username):
+        print('Token found in database')
+        token = Token.objects.get(key=username)
+        username = token.user.username
+        flag = 1
+
+    if flag == 1:
+        client = MongoClient('mongodb://127.0.0.1:27017')
+        print('database connection successfully')
+        db = client.geniobits
+        mycollection = db[username]
+        today = date.today()
+        today = str(today)
+        # today = '2019-12-31'
+        print('today date : ' + today)
+        print(username)
+        if username in db.list_collection_names():
+            print('usename found in document ')
+            result = mycollection.update({
+                'date': today
+            }, {
+                '$push': {
+                    "activity": activity,
+                }
+            })
+            print(str(result['updatedExisting']) + ' date not found create new database')
+            if not result['updatedExisting']:
+                mycollection.insert({
+                    'user': username,
+                    "activity": [activity],
+                    "date": today
+                })
+                print('new document create successful')
+        else:
+            print('usename not found in document')
+            mycollection.insert({
+                'user': username,
+                "activity": [activity],
+                "date": today
+            })
+    else:
+        print('username not found')
+    return
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def home(request):
-    return render(request, 'main_app/home.html')
+    if request.method == 'GET':
+        username = request.POST.get('username')
+        activity = request.POST.get('activity')
+        logger_history_function(username, activity)
+    return Response({'message': 'okk'})
 
 
 @api_view(['POST'])
@@ -39,18 +99,22 @@ def login_user(request):
             print(user.username)
             emp_object = Employee.objects.get(user=user)
             if not emp_object.is_verify:
-                data = {'message': 'mobile number not verify', 'error': 'False', 'token': token.key}
-            data = {'message': 'user log in successfull', 'error': 'False', 'token': token.key}
-            print(data)
-            # Response(data)
-            # print(data)
-            # return Response(data)
-            return Response(data)
+                message = 'user register but mobile number not verify '
+                token = token.key
+                error = 'False'
+                data = {'message': message, 'error': error, 'token': token}
+                logger_history_function(username, message)
+                return Response(data)
+            else:
+                message = 'user login successfully'
+                token = token.key
+                error = 'False'
+                data = {'message': message, 'error': error, 'token': token}
+                logger_history_function(username, message)
+                return Response(data)
         else:
-            data = {'message': 'user not log in', 'error': 'True', 'token': 'empty'}
+            data = {'message': 'username and password not match ', 'error': 'True', 'token': 'empty'}
             print(data)
-            # Response(data)
-            # print(data)
             return Response(data)
 
 
@@ -69,24 +133,23 @@ def sendPostRequest(reqUrl, apiKey, secretKey, useType, phoneNo, senderId, textM
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register(request):
-    data = {}
     if request.method == "POST":
         username = request.POST.get('username')
         email = request.POST.get('email')
         phone_no = request.POST.get('phone_no')
         password = request.POST.get('password')
         re_password = request.POST.get('re_password')
-        print(password)
-        print(re_password)
         if password == re_password:
             if User.objects.filter(username=username).exists():
-                data = {'message': 'username already exist', 'error': 'True', 'token': ''}
+                message = 'username already exist!! try another username'
+                token = 'empty'
+                error = 'True'
             else:
                 if not Employee.objects.filter(phone_no=phone_no).exists():
                     user = User.objects.create_user(username, email, password)
                     user.save()
-                    profile = Employee(user=user, phone_no=phone_no)
-                    profile.save()
+                    emp_obj = Employee(user=user, phone_no=phone_no)
+                    emp_obj.save()
                     login(request, user)
                     token = Token.objects.create(user=user)
                     print(token.key)
@@ -104,20 +167,25 @@ def register(request):
                         obj.save()
                     text_message = 'your OTP is : ' + OTP
 
-                    data = {'message': 'user registration successful', 'error': 'False', 'token': token.key}
                     URL = 'https://www.sms4india.com/api/v1/sendCampaign'
                     response = sendPostRequest(URL, '600XK5ONNJVYPIO66ZHUTX4PXBCGA7NT', '9TFM3V54JHDYK127', 'stage',
                                                '+91' + phone_no, '012345', text_message)
-
                     print(response.text)
+                    message = 'user registration successful'
+                    token = token.key
+                    error = 'False'
                 else:
-                    data = {'message': 'Phomne number already exist with another username', 'error': 'True',
-                            'token': ''}
+                    message = 'phone number already register with another account'
+                    token = 'empty'
+                    error = 'True'
 
         else:
-            data = {'message': 'pasword and re_enter password not match', 'error': 'True', 'token': ''}
-            # Response(data)
-            # print(data)
+            message = 'password and re_enter password not match'
+            token = 'empty'
+            error = 'True'
+
+    data = {'message': message, 'error': error, 'token': token}
+    logger_history_function(username, message)
     return Response(data)
 
 
@@ -152,9 +220,10 @@ def profileinfo(request):
             token = 'empty'
             data = {'message': message, 'username': username, 'email': email, 'phone_no': phone_no, 'error': error,
                     'token': token}
+            logger_history_function(username, 'user get profile information')
             return Response(data)
         else:
-            message = 'token not present'
+            message = 'invalid token '
             username = 'empty'
             email = 'empty'
             phone_no = 'empty'
@@ -170,7 +239,6 @@ def profileinfo(request):
 def verify_opt(request):
     if request.method == "POST":
         token = request.POST.get('token')
-
         otp = request.POST.get('otp')
         if Token.objects.filter(key=token):
             token_obj = Token.objects.get(key=token)
@@ -187,6 +255,7 @@ def verify_opt(request):
                 phone_no = 'empty'
                 error = 'True'
                 data = {'message': message, 'username': username, 'phone_no': phone_no, 'error': error, }
+                logger_history_function(token, message)
                 return Response(data)
             elif otp_object.attempts < 0:
                 message = 'you try more than 5 time'
@@ -194,15 +263,17 @@ def verify_opt(request):
                 phone_no = 'empty'
                 error = 'True'
                 data = {'message': message, 'username': username, 'phone_no': phone_no, 'error': error, }
+                logger_history_function(token, message)
                 return Response(data)
             elif int(otp_object.OTP) == int(otp):
                 otp_object.is_verify = "True"
                 username = user.username
-                message = "Otp successfull verify " + username
+                message = "Otp successfully verify " + username
                 phone_no = user.employee.phone_no
                 error = 'False'
                 otp_object.is_verify = "True"
                 data = {'message': message, 'username': username, 'phone_no': phone_no, 'error': error}
+                logger_history_function(token, message)
                 return Response(data)
             else:
                 otp_object.attempts = otp_object.attempts - 1
@@ -212,6 +283,7 @@ def verify_opt(request):
                 phone_no = user.employee.phone_no
                 error = 'True'
                 data = {'message': message, 'username': username, 'phone_no': phone_no, 'error': error}
+                logger_history_function(token, message)
                 return Response(data)
         else:
 
@@ -225,7 +297,7 @@ def verify_opt(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def mobile_check(request):
+def mobile_no_change(request):
     if request.method == 'POST':
         token = request.POST.get('token')
         phone_no = request.POST.get('phone_no')
@@ -238,17 +310,20 @@ def mobile_check(request):
                 if phone_no != phone_no_old:
                     emp_obj = Employee.objects.get(user=user)
                     emp_obj.phone_no = phone_no
+                    emp_obj.is_verify = False
                     emp_obj.save
                     error = "False"
-                    message = "User phone number is updated."
-                    token = "empty"
+                    message = "User phone number is updated.Phone number not verify please verify it"
+                    token = token
                     data = {"error": error, "message": message, "token": token}
+                    logger_history_function(token, message)
                     return Response(data)
                 else:
                     error = "False"
                     message = "User phone number is already correct."
-                    token = "empty"
+                    token = token
                     data = {"error": error, "message": message, "token": token}
+                    logger_history_function(token, message)
                     return Response(data)
         error = "True"
         message = "Token is not present or phone_no is not present."
@@ -268,7 +343,7 @@ def delete_user(request):
             token_obj = Token.objects.get(key=token)
             user = token_obj.user
             print(user.username)
-            employee = Employee.objects.get(user=user)
+            # employee = Employee.objects.get(user=user)
             if not user.employee.channel_id == 0:
                 if channel_model.objects.filter(id=user.employee.channel_id):
                     channel_obj = channel_model.objects.get(id=user.employee.channel_id)
@@ -286,23 +361,178 @@ def delete_user(request):
                             video_obj.delete()
                         else:
                             print(f'{id},video not found')
-                    channel.delete()
-                    user.delete()
-                    message = 'channel delete successfull with user'
+
+                    message = 'channel delete successful with user'
                     error = 'False'
                     data = {'message ': message, 'error': error}
+                    logger_history_function(token, message)
+                    channel.delete()
+                    user.delete()
                 else:
-                    message = 'channel not found '
-                    error = 'True'
+                    message = 'channel exit but not found in database'
+                    error = 'False'
                     data = {'message': message, 'error': error}
+                    logger_history_function(token, message)
+                    user.delete()
             else:
                 user.delete()
-                message = 'user delete succssfull user has no any channel found'
+                message = 'user delete succssfully user has no any channel found'
                 error = 'False'
                 data = {'message': message, 'error': error}
+                logger_history_function(token, message)
         else:
-
             message = 'token not valid'
             error = 'True'
             data = {'message': message, 'error': error}
     return Response(data)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def resend_reset_otp(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        if User.objects.filter(username=username).exists():
+            user = User.objects.get(username=username)
+            if Employee.objects.filter(user=user).exists():
+                emp_obj = Employee.objects.get(user=user)
+                phone_no = emp_obj.phone_no
+                digits = "0123456789"
+                digit = "123456789"
+                OTP = ""
+                # duration = (datetime.now().time() - Otp.time_generate_otp);
+                for i in range(6):
+                    if i == 0:
+                        OTP += digit[math.floor(random.random() * 10)]
+                    else:
+                        OTP += digits[math.floor(random.random() * 10)]
+                if Otp.objects.filter(user=user).exists():
+                    otp_obj = Otp.objects.get(user=user)
+                    otp_obj.delete()
+                obj = Otp(user=user, attempts=5, OTP=OTP)
+                obj.save()
+                error = 'False'
+                message = 'otp sent successfully'
+                token = 'empty'
+                data = {'error': error, 'message': message, 'token': token}
+                logger_history_function(username, message)
+                return Response(data)
+            error = 'True'
+            message = 'username my be admin'
+            token = 'empty'
+            data = {'error': error, 'message': message, 'token': token}
+            logger_history_function(username, message)
+            return Response(data)
+        error = 'True'
+        message = 'user not exists'
+        token = 'empty'
+        data = {'error': error, 'message': message, 'token': token}
+        logger_history_function(username, message)
+        return Response(data)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verify_otp_reset(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        otp = request.POST.get('otp')
+        if User.objects.filter(username=username).exists():
+            user = User.objects.get(username=username)
+            if Otp.objects.filter(user=user).exists():
+                otp_obj = Otp.objects.get(user=user)
+                otp_in_table = otp_obj.OTP
+                print("-----------------------------------")
+                print(otp_in_table)
+                print(otp)
+                print("-----------------------------------")
+                if otp_in_table == int(otp) and otp_obj.attempts > 0:
+                    otp_obj.delete()
+                    if Token.objects.filter(user=user).exists():
+                        token_obj = Token.objects.get(user=user)
+                    else:
+                        token_obj = Token.objects.create(user=user)
+                    error = 'False'
+                    message = 'otp varify successfully'
+                    token = token_obj.key
+                    data = {'error': error, 'message': message, 'token': token}
+                    logger_history_function(username, message)
+                    return Response(data)
+                otp_obj.attempts -= 1
+                otp_obj.save()
+                if otp_obj.attempts <= 0:
+                    digits = "0123456789"
+                    digit = "123456789"
+                    OTP = ""
+                    # duration = (datetime.now().time() - Otp.time_generate_otp);
+                    for i in range(6):
+                        if i == 0:
+                            OTP += digit[math.floor(random.random() * 10)]
+                        else:
+                            OTP += digits[math.floor(random.random() * 10)]
+                    if Otp.objects.filter(user=user).exists():
+                        otp_obj = Otp.objects.get(user=user)
+                        otp_obj.delete()
+                    obj = Otp(user=user, attempts=5, OTP=OTP)
+                    obj.save()
+                    error = 'True'
+                    message = 'new otp generated due to max wrong attempts'
+                    token = 'empty'
+                    data = {'error': error, 'message': message, 'token': token}
+                    logger_history_function(username, message)
+                    return Response(data)
+                error = 'True'
+                message = 'wrong attempts'
+                token = 'empty'
+                data = {'error': error, 'message': message, 'token': token}
+                logger_history_function(username, message)
+                return Response(data)
+            error = 'True'
+            message = 'first tap on send otp.'
+            token = 'empty'
+            data = {'error': error, 'message': message, 'token': token}
+            logger_history_function(username, message)
+            return Response(data)
+        error = 'True'
+        message = 'invalid username'
+        token = 'empty'
+        data = {'error': error, 'message': message, 'token': token}
+        return Response(data)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def password_change(request):
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        re_password = request.POST.get('re_password')
+        token = request.POST.get('token')
+        if password == re_password:
+            if Token.objects.filter(key=token).exists():
+                token_obj = Token.objects.get(key=token)
+                user = token_obj.user
+                if user.password == password:
+                    error = 'True'
+                    message = 'password can\'t be old one'
+                    token = token
+                    data = {'error': error, 'message': message, 'token': token}
+                    logger_history_function(token, message)
+                    return Response(data)
+                user.password = password
+                user.save()
+                error = 'False'
+                message = 'password reset successfully'
+                token = token
+                data = {'error': error, 'message': message, 'token': token}
+                logger_history_function(token, message)
+                return Response(data)
+            error = 'True'
+            message = 'user is invalid'
+            token = 'empty'
+            data = {'error': error, 'message': message, 'token': token}
+            return Response(data)
+        error = 'True'
+        message = 'password not match'
+        token = 'empty'
+        data = {'error': error, 'message': message, 'token': token}
+        return Response(data)
