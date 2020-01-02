@@ -1,4 +1,5 @@
-from datetime import date
+from datetime import date, datetime
+
 import math
 import random
 
@@ -22,7 +23,7 @@ from pymongo import MongoClient
 
 def logger_history_function(username, activity):
     flag = 0
-    print('calll')
+    print('call')
     if User.objects.filter(username=username):
         print('username found in database')
         flag = 1
@@ -42,6 +43,7 @@ def logger_history_function(username, activity):
         today = str(today)
         # today = '2019-12-31'
         print('today date : ' + today)
+        activity_and_time =  str(datetime.now())+ '    '+activity
         print(username)
         if username in db.list_collection_names():
             print('usename found in document ')
@@ -49,14 +51,14 @@ def logger_history_function(username, activity):
                 'date': today
             }, {
                 '$push': {
-                    "activity": activity,
+                    "activity": activity_and_time,
                 }
             })
             print(str(result['updatedExisting']) + ' date not found create new database')
             if not result['updatedExisting']:
                 mycollection.insert({
                     'user': username,
-                    "activity": [activity],
+                    "activity": [activity_and_time],
                     "date": today
                 })
                 print('new document create successful')
@@ -64,7 +66,7 @@ def logger_history_function(username, activity):
             print('usename not found in document')
             mycollection.insert({
                 'user': username,
-                "activity": [activity],
+                "activity": [activity_and_time],
                 "date": today
             })
     else:
@@ -78,7 +80,9 @@ def home(request):
     if request.method == 'GET':
         username = request.POST.get('username')
         activity = request.POST.get('activity')
-        logger_history_function(username, activity)
+        print(datetime.now())
+        # logger_history_function(username, activity)
+        # video_logger('3','11','dislike','python,php')
     return Response({'message': 'okk'})
 
 
@@ -199,12 +203,24 @@ def register(request):
 #
 
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def logout(request):
-    auth_logout(request)
+    if request.method == "POST":
+        token = request.POST.get('token')
+        if Token.objects.filter(key=token).exists():
+            token_obj = Token.objects.get(key=token)
+            token_obj.delete()
+            message = 'User logout successful'
+            error = 'False'
+            data = {'message': message,'error': error,'token': token}
+            return Response(data)
 
-    return render(request, "main_app/home.html")
-
-
+        else:
+            message = 'User already logout'
+            error = 'True'
+            data = {'message': message,'error': error,'token': token}
+            return Response(data)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def profileinfo(request):
@@ -245,6 +261,14 @@ def verify_opt(request):
             print(token_obj.key)
             user = token_obj.user
             print(user.username)
+            if not Otp.objects.filter(user=user):
+                message = 'user has no longer otp found. firsr create otp'
+                username = 'empty'
+                phone_no = 'empty'
+                error = 'True'
+                data = {'message': message, 'username': username, 'phone_no': phone_no, 'error': error, }
+                logger_history_function(token, message)
+                return Response(data)
             otp_object = Otp.objects.get(user=user)
             print(otp_object.OTP)
             print(otp_object.attempts)
@@ -273,6 +297,10 @@ def verify_opt(request):
                 error = 'False'
                 otp_object.is_verify = "True"
                 data = {'message': message, 'username': username, 'phone_no': phone_no, 'error': error}
+                emp_obj = Employee.objects.get(user=user)
+                emp_obj.is_verify = True
+                emp_obj.save()
+                otp_object.delete()
                 logger_history_function(token, message)
                 return Response(data)
             else:
@@ -397,15 +425,12 @@ def resend_reset_otp(request):
             if Employee.objects.filter(user=user).exists():
                 emp_obj = Employee.objects.get(user=user)
                 phone_no = emp_obj.phone_no
+                # duration = (datetime.now().time() - Otp.time_generate_otp);
                 digits = "0123456789"
-                digit = "123456789"
                 OTP = ""
                 # duration = (datetime.now().time() - Otp.time_generate_otp);
                 for i in range(6):
-                    if i == 0:
-                        OTP += digit[math.floor(random.random() * 10)]
-                    else:
-                        OTP += digits[math.floor(random.random() * 10)]
+                    OTP += digits[math.floor(random.random() * 10)]
                 if Otp.objects.filter(user=user).exists():
                     otp_obj = Otp.objects.get(user=user)
                     otp_obj.delete()

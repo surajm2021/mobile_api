@@ -27,21 +27,33 @@ def create_channel(request):
         elif Token.objects.filter(key=token):
             token_obj = Token.objects.get(key=token)
             user = token_obj.user
-            employee = Employee.objects.get(user=user)
-            if employee.channel_id == 0:
-                channel_obj = channel_model(logo=logo, title=title, description=description)
-                channel_obj.save()
-                channel_obj = channel_model.objects.get(title=title)
-                employee.channel_id = channel_obj.id
-                print(channel_obj.id)
-                employee.save()
-                message = 'channel create successfully channel name '+title
-                error = 'False'
-                data = {'message ': message, 'error': error}
-                logger_history_function(token, message)
-            else:  # if channel already exist for same user
-                channel = channel_model.objects.get(id=employee.channel_id)
-                message = 'channel already exist with channel name : ' + channel.title
+            if Employee.objects.filter(user=user):
+                employee = Employee.objects.get(user=user)
+                if employee.is_verify:
+                    if employee.channel_id == 0:
+                        channel_obj = channel_model(logo=logo, title=title, description=description)
+                        channel_obj.save()
+                        channel_obj = channel_model.objects.get(title=title)
+                        employee.channel_id = channel_obj.id
+                        print(channel_obj.id)
+                        employee.save()
+                        message = 'channel create successfully channel name '+title
+                        error = 'False'
+                        data = {'message ': message, 'error': error}
+                        logger_history_function(token, message)
+                    else:  # if channel already exist for same user
+                        channel = channel_model.objects.get(id=employee.channel_id)
+                        message = 'channel already exist with channel name : ' + channel.title
+                        error = 'True'
+                        data = {'message ': message, 'error': error}
+                        logger_history_function(token, message)
+                else:
+                    message = 'phone number not verify first verify your phone number'
+                    error = 'True'
+                    data = {'message ': message, 'error': error}
+                    logger_history_function(token, message)
+            else:
+                message = 'user may be admin cannot create channel'
                 error = 'True'
                 data = {'message ': message, 'error': error}
                 logger_history_function(token, message)
