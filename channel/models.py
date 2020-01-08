@@ -2,11 +2,11 @@ from PIL import Image
 from django.db import models
 from video.models import video_class
 
+
 # from video.models import video_class
 
 
 class channel_model(models.Model):
-
     # channel_id = models.IntegerField(primary_key=True)
     logo = models.ImageField(upload_to='channel_logo')
     title = models.CharField(max_length=50)
@@ -18,7 +18,7 @@ class channel_model(models.Model):
     playlist = models.CharField(max_length=50, default="")
 
     def __str__(self):
-        return self.title
+        return str(self.id) + " " + self.title
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

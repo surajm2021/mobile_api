@@ -1,10 +1,12 @@
-import string
+import random
 
-from django.shortcuts import render
+from django.db.models import Q
+from nltk import collections
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-# Create your views here.
+from setuptools.package_index import unique_everseen
+
 from channel.models import channel_model
 from .models import video_class
 from main_app.models import Employee
@@ -16,16 +18,109 @@ from . import all_languages
 
 
 def filter_language(title):
-    title_list = title.split(' ')
-    for title in title_list:
+    programming_language = []
+    imp_tags = []
+    title_list = title.split(" ")
+    for tag in title_list:
         if title.lower() in all_languages.languages_list:
-            print('---------------------------------------------------------------------------')
-            print(title)
-            print('---------------------------------------------------------------------------')
-            return title
+            programming_language.append(title)
+        elif tag.lower() in all_languages.unnessary_word:
+            pass
         else:
-            print('not found any language name')
-    return title
+            imp_tags.append(tag)
+    video_tags = programming_language + imp_tags
+    print(video_tags)
+    video_tags = list(set(video_tags))
+    print(video_tags)
+    return video_tags
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def search_video(request):
+    if request.method == "POST":
+        search_string = request.POST.get('search_string')
+        if search_string:
+            search_list = search_string.split(" ")
+            search_list_remove_unnessary_word = []
+            for search_word in search_list:
+                if search_word.lower() in all_languages.unnessary_word:
+                    pass
+                else:
+                    search_list_remove_unnessary_word.append(search_word)
+            search_list = search_list_remove_unnessary_word
+            programming_language = False
+            for search_word in search_list:
+                # print(search_word)
+                if search_word in all_languages.all_languages:
+                    programming_language = search_word
+                    # print(search_word)
+            video_ids = []
+            if programming_language:
+                programming_match_video = video_class.objects.filter(Q(title__icontains=programming_language))
+                for search_word in search_list:
+                    print(search_word)
+                    match_video = programming_match_video.filter(Q(title__icontains=search_word))
+                    for find_video_ids in match_video:
+                        print(find_video_ids.id)
+                        video_ids.append(find_video_ids.id)
+            else:
+                for search_word in search_list:
+                    match_video = video_class.objects.filter(Q(title__icontains=search_word))
+                    for find_video_ids in match_video:
+                        video_ids.append(find_video_ids.id)
+            if video_ids:
+                # print(video_ids)
+                print(collections.Counter(video_ids))
+                video_match_word = list(zip(*collections.Counter(video_ids).items()))
+                print(video_match_word[0])
+                hit_points_of_video = []
+                for index, video_id in enumerate(video_match_word[0]):
+                    video_obj = video_class.objects.get(id=video_id)
+                    # print(index)
+                    hit_points = int(video_match_word[1][index]) * 1000
+                    # print(video_match_word[0])
+                    if not video_obj.views == 0:
+                        hit_points += video_obj.like / video_obj.views * 1000
+                        hit_points -= video_obj.dislike / video_obj.views * 1000
+                        # hit_points += video_obj.views
+                    hit_points_of_video.append(hit_points)
+                print(hit_points_of_video)
+                final_output = [x for _, x in sorted(zip(hit_points_of_video, video_match_word[0]), reverse=True)]
+                print(final_output)
+                # video_ids=sorted(set(video_ids), key=lambda ele: video_ids.count(ele))
+                # video_ids=video_ids[::-1]
+                # # print(video_ids)
+                # find_video_object=[]
+                find_video_title = []
+                for video_id in final_output:
+                    video_obj = video_class.objects.get(id=video_id)
+                    find_video_title.append(video_obj.title)
+                return Response({'result ': find_video_title})
+            else:
+                return Response({'result ': 'not result found'})
+    return Response({'result': search_string})
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def random_like_dislike(request):
+    if request.method == "POST":
+        for v in video_class.objects.all():
+            imp_tags = []
+            title_list = v.title.split(" ")
+            for tag in title_list:
+                if tag in all_languages.unnessary_word:
+                    print(tag)
+                    pass
+                else:
+                    imp_tags.append(tag)
+            v.tags = imp_tags
+            v.like = random.randint(100, 900)
+            v.dislike = random.randint(0, 400)
+            v.views = random.randint(200, 3000)
+            v.save()
+    return Response({'okk': 'okk'})
 
 
 @api_view(['POST'])
@@ -37,18 +132,24 @@ def trending_video(request):
             token_obj = Token.objects.get(key=token)
             user = token_obj.user
             tags = user.employee.tags
-            print(tags)
+            tags = tags.split(',')
+            # print(tags)
             score = []
             video_ids = []
             for v in video_class.objects.all():
-                video_score = v.views + 2 * (v.like - v.dislike) / v.get_time_diff()
-                score.append(video_score)
-                video_ids.append(v.id)
+                for user_tags in tags:
+                    # print(user_tags)
+                    if user_tags in v.tags:
+                        # print(user_tags)
+                        print(user_tags)
+                        video_score = v.views + v.like * 2 - v.dislike * 0.5 / v.get_time_diff()
+                        #
+                        # if v.id in video_ids:
+                        #     video_score=video_score*1.2
+                        score.append(video_score)
+                        video_ids.append(v.id)
             score, video_ids = zip(*sorted(zip(score, video_ids)))
-
-            print(score)
-            print(video_ids)
-            return Response({'score : ': score, 'video_ids : ': video_ids})
+            return Response({'video_ids : ': video_ids[0:10]})
         else:
             return Response({'message': 'token Not found'})
 
@@ -76,7 +177,7 @@ def video_logger(user_id, video_id, activity, tag):
             })
             print('new document create successful')
     else:
-        print('usename not found in document')
+        print('username not found in document')
         mycollection.insert({
             'user_id': user_id,
             "activity": [{'activity ': activity, 'video_id': video_id, 'tag': tag, 'time': str(datetime.now())}]
@@ -112,19 +213,18 @@ def upload_video(request):
                 data = {'message ': message, 'error': error}
                 logger_history_function(token, message)
             else:
-                programming_language = filter_language(title)
-                print(programming_language)
-
+                programming_tags = filter_language(title)
+                # print(programming_tags)
                 video_obj = video_class(title=title, channel_id=channel_id, video=video, length_of_video=length_of_video
                                         , thumb_image=thumb_image, description=description,
                                         is_downloadable=is_downloadable,
-                                        is_sharable=is_sharable, tags=tags)
+                                        is_sharable=is_sharable, tags=programming_tags)
                 video_obj.save()
                 video_obj = video_class.objects.get(id=video_obj.id)
                 channel_obj = channel_model.objects.get(id=channel_id)
                 video_ids = channel_obj.video_id
-                print(video_ids)
-                print(video_obj.id)
+                # print(video_ids)
+                # print(video_obj.id)
                 video_ids = str(video_ids) + str(video_obj.id) + ","
                 channel_obj.video_id = video_ids
                 channel_obj.save()

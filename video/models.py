@@ -10,8 +10,8 @@ from django.db import models
 class video_class(models.Model):
     channel_id = models.IntegerField(null=True)
     video = models.FileField(upload_to='videous')
-    length_of_video = models.IntegerField()
-    url = models.URLField()
+    length_of_video = models.IntegerField(default=0)
+    url = models.URLField(default="")
     thumb_image = models.ImageField(upload_to='thumb_image')
     like = models.IntegerField(default=0)
     views = models.IntegerField(default=0)
@@ -25,12 +25,12 @@ class video_class(models.Model):
     is_sharable = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.title
+        return str(self.id) + " " + self.title
 
     def get_time_diff(self):
         if self.uploaded_on:
             now = datetime.datetime.utcnow().replace(tzinfo=utc)
             timediff = now - self.uploaded_on
-            return timediff.total_seconds()/60
+            return timediff.total_seconds() / 60
 
 # PlayList
