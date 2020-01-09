@@ -9,7 +9,6 @@ from setuptools.package_index import unique_everseen
 
 from channel.models import channel_model
 from .models import video_class
-from main_app.models import Employee
 from rest_framework.authtoken.models import Token
 from datetime import datetime
 from main_app.views import logger_history_function
@@ -30,7 +29,7 @@ def filter_language(title):
             imp_tags.append(tag)
     video_tags = programming_language + imp_tags
     print(video_tags)
-    video_tags = list(set(video_tags))
+    video_tags = str(list(set(video_tags)))
     print(video_tags)
     return video_tags
 
@@ -131,16 +130,15 @@ def trending_video(request):
         if Token.objects.filter(key=token):
             token_obj = Token.objects.get(key=token)
             user = token_obj.user
-            tags = user.employee.tags
+            tags = user.tags
             tags = tags.split(',')
-            # print(tags)
             score = []
             video_ids = []
             for v in video_class.objects.all():
                 for user_tags in tags:
                     # print(user_tags)
+                    print(v.tags)
                     if user_tags in v.tags:
-                        # print(user_tags)
                         print(user_tags)
                         video_score = v.views + v.like * 2 - v.dislike * 0.5 / v.get_time_diff()
                         #
@@ -148,7 +146,7 @@ def trending_video(request):
                         #     video_score=video_score*1.2
                         score.append(video_score)
                         video_ids.append(v.id)
-            score, video_ids = zip(*sorted(zip(score, video_ids)))
+            # score, video_ids = zip(*sorted(zip(score, video_ids)))
             return Response({'video_ids : ': video_ids[0:10]})
         else:
             return Response({'message': 'token Not found'})
@@ -206,19 +204,21 @@ def upload_video(request):
         if Token.objects.filter(key=token):
             token_obj = Token.objects.get(key=token)
             user = token_obj.user
-            channel_id = user.employee.channel_id
+            channel_id = user.channel_id
             if not channel_model.objects.filter(id=channel_id):
                 message = 'user has no channel to upload video first create channel'
                 error = 'True'
                 data = {'message ': message, 'error': error}
                 logger_history_function(token, message)
             else:
+                video_tags= tags.split(' ')
                 programming_tags = filter_language(title)
+                video_tags.append(programming_tags)
                 # print(programming_tags)
                 video_obj = video_class(title=title, channel_id=channel_id, video=video, length_of_video=length_of_video
                                         , thumb_image=thumb_image, description=description,
                                         is_downloadable=is_downloadable,
-                                        is_sharable=is_sharable, tags=programming_tags)
+                                        is_sharable=is_sharable, tags=video_tags)
                 video_obj.save()
                 video_obj = video_class.objects.get(id=video_obj.id)
                 channel_obj = channel_model.objects.get(id=channel_id)
@@ -250,7 +250,7 @@ def delete_video(request):
             if video_class.objects.filter(id=video_id):
                 token_obj = Token.objects.get(key=token)
                 user = token_obj.user
-                channel_id = user.employee.channel_id
+                channel_id = user.channel_id
                 if video_class.objects.filter(id=video_id, channel_id=channel_id):
                     video_obj = video_class.objects.get(id=video_id)
                     title = video_obj.title
@@ -299,47 +299,40 @@ def like_video(request):
             title = video_obj.title
             token_obj = Token.objects.get(key=token)
             user = token_obj.user
-            if Employee.objects.filter(user=user).exists():
-                emp_obj = Employee.objects.get(user=user)
-                like_ids = emp_obj.liked
-                dislike_ids = emp_obj.disliked
-                dislike_ids = dislike_ids.split(",")
-                if video_id in dislike_ids:
-                    dislike_ids.remove(video_id)
-                    video_obj.dislike -= 1
-                    dislike_ids = ",".join(dislike_ids)
-                    emp_obj.disliked = dislike_ids
-                if like_ids == "":
-                    like_ids = video_id
+            like_ids = user.likes
+            dislike_ids = user.dislikes
+            dislike_ids = str(dislike_ids).split(",")
+            if video_id in dislike_ids:
+                dislike_ids.remove(video_id)
+                video_obj.dislike -= 1
+                dislike_ids = ",".join(dislike_ids)
+                user.dislikes = dislike_ids
+            if like_ids == "":
+                like_ids = video_id
+            else:
+                like_ids = str(like_ids).split(",")
+                if video_id not in like_ids:
+                    like_ids.append(video_id)
                 else:
-                    like_ids = like_ids.split(",")
-                    if video_id not in like_ids:
-                        like_ids.append(video_id)
-                    else:
-                        error = "True"
-                        message = "video already liked  : " + title
-                        token = token
-                        data = {'error': error, 'message': message, 'token': token}
-                        logger_history_function(token, message)
-                        return Response(data)
-                    like_ids = ",".join(like_ids)
-                emp_obj.liked = like_ids
-                video_obj.like += 1
-                emp_obj.save()
-                video_obj.save()
-                error = "False"
-                message = "video liked successfully  : " + title
-                token = token
-                data = {'error': error, 'message': message, 'token': token}
-                video_logger(user.id, video_obj.id, 'like', video_obj.tags)
-                logger_history_function(token, message)
-                return Response(data)
-            error = "True"
-            message = "user is not having proper data may be admin"
+                    error = "True"
+                    message = "video already liked  : " + title
+                    token = token
+                    data = {'error': error, 'message': message, 'token': token}
+                    logger_history_function(token, message)
+                    return Response(data)
+                like_ids = ",".join(like_ids)
+            user.likes = like_ids
+            video_obj.like += 1
+            user.save()
+            video_obj.save()
+            error = "False"
+            message = "video liked successfully  : " + title
             token = token
             data = {'error': error, 'message': message, 'token': token}
+            video_logger(user.id, video_obj.id, 'like', video_obj.tags)
             logger_history_function(token, message)
             return Response(data)
+
         error = "True"
         message = "invalid token received or video id not correct "
         token = "empty"
@@ -363,47 +356,40 @@ def dislike_video(request):
             token_obj = Token.objects.get(key=token)
             user = token_obj.user
             title = video_obj.title
-            if Employee.objects.filter(user=user).exists():
-                emp_obj = Employee.objects.get(user=user)
-                dislike_ids = emp_obj.disliked
-                like_ids = emp_obj.liked
-                like_ids = like_ids.split(",")
-                if video_id in like_ids:
-                    like_ids.remove(video_id)
-                    video_obj.like -= 1
-                    like_ids = ",".join(like_ids)
-                    emp_obj.liked = like_ids
-                if dislike_ids == "":
-                    dislike_ids = video_id
+            dislike_ids = user.dislikes
+            like_ids = user.likes
+            like_ids = str(like_ids).split(",")
+            if video_id in like_ids:
+                like_ids.remove(video_id)
+                video_obj.like -= 1
+                like_ids = ",".join(like_ids)
+                user.likes = like_ids
+            if dislike_ids == "":
+                dislike_ids = video_id
+            else:
+                dislike_ids = str(dislike_ids).split(",")
+                if video_id not in dislike_ids:
+                    dislike_ids.append(video_id)
                 else:
-                    dislike_ids = dislike_ids.split(",")
-                    if video_id not in dislike_ids:
-                        dislike_ids.append(video_id)
-                    else:
-                        error = "True"
-                        message = "video already disliked : " + title
-                        token = token
-                        data = {'error': error, 'message': message, 'token': token}
-                        logger_history_function(token, message)
-                        return Response(data)
-                dislike_ids = ",".join(dislike_ids)
-                emp_obj.disliked = dislike_ids
-                video_obj.dislike += 1
-                emp_obj.save()
-                video_obj.save()
-                error = "False"
-                message = "video disliked successfully : " + title
-                token = token
-                data = {'error': error, 'message': message, 'token': token}
-                video_logger(user.id, video_obj.id, 'dislike', video_obj.tags)
-                logger_history_function(token, message)
-                return Response(data)
-            error = "True"
-            message = "user is not having proper data may be admin"
+                    error = "True"
+                    message = "video already disliked : " + title
+                    token = token
+                    data = {'error': error, 'message': message, 'token': token}
+                    logger_history_function(token, message)
+                    return Response(data)
+            dislike_ids = ",".join(dislike_ids)
+            user.dislikes = dislike_ids
+            video_obj.dislike += 1
+            user.save()
+            video_obj.save()
+            error = "False"
+            message = "video disliked successfully : " + title
             token = token
             data = {'error': error, 'message': message, 'token': token}
+            video_logger(user.id, video_obj.id, 'dislike', video_obj.tags)
             logger_history_function(token, message)
             return Response(data)
+
         error = "True"
         message = "invalid token received"
         token = "empty"

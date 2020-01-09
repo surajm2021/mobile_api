@@ -3,7 +3,6 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 
-from main_app.models import Employee
 from .models import channel_model
 from django.contrib.auth.models import User
 from video.models import video_class
@@ -27,37 +26,29 @@ def create_channel(request):
         elif Token.objects.filter(key=token):
             token_obj = Token.objects.get(key=token)
             user = token_obj.user
-            if Employee.objects.filter(user=user):
-                employee = Employee.objects.get(user=user)
-                if employee.is_verify:
-                    if employee.channel_id == 0:
-                        channel_obj = channel_model(logo=logo, title=title, description=description)
-                        channel_obj.save()
-                        channel_obj = channel_model.objects.get(title=title)
-                        employee.channel_id = channel_obj.id
-                        print(channel_obj.id)
-                        employee.save()
-                        message = 'channel create successfully channel name '+title
-                        error = 'False'
-                        data = {'message ': message, 'error': error}
-                        logger_history_function(token, message)
-                    else:  # if channel already exist for same user
-                        channel = channel_model.objects.get(id=employee.channel_id)
-                        message = 'channel already exist with channel name : ' + channel.title
-                        error = 'True'
-                        data = {'message ': message, 'error': error}
-                        logger_history_function(token, message)
-                else:
-                    message = 'phone number not verify first verify your phone number'
+            if user.is_verify:
+                if user.channel_id is None:
+                    channel_obj = channel_model(logo=logo, title=title, description=description)
+                    channel_obj.save()
+                    channel_obj = channel_model.objects.get(title=title)
+                    user.channel_id = channel_obj.id
+                    print(channel_obj.id)
+                    user.save()
+                    message = 'channel create successfully channel name '+title
+                    error = 'False'
+                    data = {'message ': message, 'error': error}
+                    logger_history_function(token, message)
+                else:  # if channel already exist for same user
+                    channel = channel_model.objects.get(id=user.channel_id)
+                    message = 'channel already exist with channel name : ' + channel.title
                     error = 'True'
                     data = {'message ': message, 'error': error}
                     logger_history_function(token, message)
             else:
-                message = 'user may be admin cannot create channel'
+                message = 'phone number not verify first verify your phone number'
                 error = 'True'
                 data = {'message ': message, 'error': error}
                 logger_history_function(token, message)
-
         else:  # if  Token not found in database means user not exit
             message = 'token not found'
             error = 'True'
@@ -75,8 +66,7 @@ def delete_channel(request):
         if Token.objects.filter(key=token):
             token_obj = Token.objects.get(key=token)
             user = token_obj.user
-            employee = Employee.objects.get(user=user)
-            if employee.channel_id == 0:
+            if user.channel_id is None:
                 message = 'This User has no channel exit'
                 error = 'False'
                 data = {'message ': message, 'error': error}
@@ -103,8 +93,8 @@ def delete_channel(request):
                             video_obj.delete()
                         else:
                             print(f'{id},video not found')
-                    employee.channel_id=0
-                    employee.save()
+                    user.channel_id=None
+                    user.save()
                     channel.delete()
                     message = 'channel delete successfully : '+title
                     error = 'False'

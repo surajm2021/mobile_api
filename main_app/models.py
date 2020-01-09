@@ -110,12 +110,14 @@ class User(AbstractBaseUser):
     likes = models.CharField(
         verbose_name='likes',
         max_length=255,
-        null=True
+        null=True,
+        default=""
     )
     dislikes = models.CharField(
         verbose_name='dislikes',
         max_length=255,
-        null=True
+        null=True,
+        default=""
     )
 
     active = models.BooleanField(default=True)
@@ -136,28 +138,6 @@ class User(AbstractBaseUser):
         "Does the user have permissions to view the app `app_label`?"
         # Simplest possible answer: Yes, always
         return True
-
-
-#
-# @receiver(post_save, sender=settings.AUTH_USER_MODEL)
-# def create_auth_token(sender, instance=None, created=False, **kwargs):
-#     if created:
-#         Token.objects.create(user=instance)
-#         print('token create')
-
-class Employee(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    phone_no = models.IntegerField()
-    application_id = models.CharField(max_length=50, null=True)
-    is_verify = models.BooleanField(default=False)
-    tags = models.CharField(max_length=50, null=True)
-    channel_id = models.IntegerField(default=0, null=True)
-    liked = models.CharField(max_length=255, default="")
-    disliked = models.CharField(max_length=255, default="")
-
-    def __str__(self):
-        return self.user.username
-
 
 class Otp(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)

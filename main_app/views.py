@@ -4,15 +4,13 @@ import math
 import random
 
 import requests
-from rest_framework import authentication
 from rest_framework.authtoken.models import Token
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from .models import Employee, Otp, UserManager, User
-from django.contrib.auth import authenticate, login
+from .models import Otp, User
 from .backends import MyAuthBackend
 from channel.models import channel_model
 from video.models import video_class
@@ -21,7 +19,6 @@ from pymongo import MongoClient
 
 def logger_history_function(username, activity):
     flag = 0
-    # print('call')
     if User.objects.filter(username=username):
         # print('username found in database')
         flag = 1
