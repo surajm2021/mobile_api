@@ -5,7 +5,6 @@ from nltk import collections
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from setuptools.package_index import unique_everseen
 
 from channel.models import channel_model
 from .models import video_class
@@ -29,7 +28,7 @@ def filter_language(title):
             imp_tags.append(tag)
     video_tags = programming_language + imp_tags
     print(video_tags)
-    video_tags = str(list(set(video_tags)))
+    video_tags = list(set(video_tags))
     print(video_tags)
     return video_tags
 
@@ -146,7 +145,8 @@ def trending_video(request):
                         #     video_score=video_score*1.2
                         score.append(video_score)
                         video_ids.append(v.id)
-            # score, video_ids = zip(*sorted(zip(score, video_ids)))
+            if video_ids:
+                score, video_ids = zip(*sorted(zip(score, video_ids)))
             return Response({'video_ids : ': video_ids[0:10]})
         else:
             return Response({'message': 'token Not found'})
@@ -213,7 +213,8 @@ def upload_video(request):
             else:
                 video_tags= tags.split(' ')
                 programming_tags = filter_language(title)
-                video_tags.append(programming_tags)
+                for tag in programming_tags:
+                    video_tags.append(tag)
                 # print(programming_tags)
                 video_obj = video_class(title=title, channel_id=channel_id, video=video, length_of_video=length_of_video
                                         , thumb_image=thumb_image, description=description,
