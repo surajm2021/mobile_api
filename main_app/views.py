@@ -12,7 +12,7 @@ from rest_framework.response import Response
 
 from .models import Otp, User
 from .backends import MyAuthBackend
-from channel.models import channel_model
+from channel.models import channel_model, course, course_session
 from video.models import video_class
 from pymongo import MongoClient
 
@@ -98,7 +98,6 @@ def login_user(request):
         user = MyAuthBackend.authenticate(request, username=username, password=password)
         if user is not None:
             # login(request, user)
-            print(MyAuthBackend.get_user(request, user.id))
             if Token.objects.filter(user=user).exists():
                 token = Token.objects.get(user=user)
                 token.delete()
@@ -404,7 +403,22 @@ def delete_user(request):
                             video_obj.delete()
                         else:
                             print(f'{id},video not found')
-
+                    course_id = channel.courses_id
+                    course_id_list = course_id.split(",")
+                    print(video_list)
+                    course_id_list = [s for s in course_id_list if s.isdigit()]
+                    for course_id in course_id_list:
+                        if course.objects.filter(id=course_id):
+                            course_obj = course.objects.get(id=course_id)
+                            course_session_id = course_obj.session_id
+                            if not course_session_id is None:
+                                course_session_id_list = course_session_id.split(",")
+                                course_session_id_list = [s for s in course_session_id_list if s.isdigit()]
+                                for session_id in course_session_id_list:
+                                    print(f'session id : {session_id}')
+                                    session_obj=course_session.objects.get(id=session_id)
+                                    session_obj.delete()
+                            course_obj.delete()
                     message = 'channel delete successful with user'
                     error = 'False'
                     data = {'message ': message, 'error': error}
@@ -432,46 +446,38 @@ def delete_user(request):
             data = {'message': message, 'error': error}
     return Response(data)
 
-#
-# @api_view(['POST'])
-# @permission_classes([AllowAny])
-# def resend_reset_otp(request):
-#     if request.method == 'POST':
-#         username = request.POST.get('username')
-#         if User.objects.filter(username=username).exists():
-#             user = User.objects.get(username=username)
-#             if Employee.objects.filter(user=user).exists():
-#                 emp_obj = Employee.objects.get(user=user)
-#                 phone = emp_obj.phone
-#                 # duration = (datetime.now().time() - Otp.time_generate_otp);
-#                 digits = "0123456789"
-#                 OTP = ""
-#                 # duration = (datetime.now().time() - Otp.time_generate_otp);
-#                 for i in range(6):
-#                     OTP += digits[math.floor(random.random() * 10)]
-#                 if Otp.objects.filter(user=user).exists():
-#                     otp_obj = Otp.objects.get(user=user)
-#                     otp_obj.delete()
-#                 obj = Otp(user=user, attempts=5, OTP=OTP)
-#                 obj.save()
-#                 error = 'False'
-#                 message = 'otp sent successfully'
-#                 token = 'empty'
-#                 data = {'error': error, 'message': message, 'token': token}
-#                 logger_history_function(username, message)
-#                 return Response(data)
-#             error = 'True'
-#             message = 'username my be admin'
-#             token = 'empty'
-#             data = {'error': error, 'message': message, 'token': token}
-#             logger_history_function(username, message)
-#             return Response(data)
-#         error = 'True'
-#         message = 'user not exists'
-#         token = 'empty'
-#         data = {'error': error, 'message': message, 'token': token}
-#         logger_history_function(username, message)
-#         return Response(data)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def resend_reset_otp(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        if User.objects.filter(username=username).exists():
+            user = User.objects.get(username=username)
+            phone = user.phone
+            # duration = (datetime.now().time() - Otp.time_generate_otp);
+            digits = "0123456789"
+            OTP = ""
+            # duration = (datetime.now().time() - Otp.time_generate_otp);
+            for i in range(6):
+                OTP += digits[math.floor(random.random() * 10)]
+            if Otp.objects.filter(user=user).exists():
+                otp_obj = Otp.objects.get(user=user)
+                otp_obj.delete()
+            obj = Otp(user=user, attempts=5, OTP=OTP)
+            obj.save()
+            error = 'False'
+            message = 'otp sent successfully'
+            token = 'empty'
+            data = {'error': error, 'message': message, 'token': token}
+            logger_history_function(username, message)
+            return Response(data)
+        error = 'True'
+        message = 'user not exists'
+        token = 'empty'
+        data = {'error': error, 'message': message, 'token': token}
+        logger_history_function(username, message)
+        return Response(data)
 
 #
 # @api_view(['POST'])
@@ -541,7 +547,7 @@ def delete_user(request):
 #         token = 'empty'
 #         data = {'error': error, 'message': message, 'token': token}
 #         return Response(data)
-
+#
 
 @api_view(['POST'])
 @permission_classes([AllowAny])

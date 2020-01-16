@@ -27,7 +27,7 @@ urlpatterns = [
     path('delete_user/', views.delete_user, name='delete_user'),
 
     # path('verify_otp_reset/', views.verify_otp_reset, name='verify_otp_reset'),
-    # path('resend_reset_otp/', views.resend_reset_otp, name='resend_reset_otp'),
+    path('resend_reset_otp/', views.resend_reset_otp, name='resend_reset_otp'),
     path('password_change/', views.password_change, name='password_change'),
     path('mobile_no_change/',views.mobile_no_change,name='mobile_no_change'),
 

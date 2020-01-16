@@ -33,4 +33,5 @@ class video_class(models.Model):
             timediff = now - self.uploaded_on
             return timediff.total_seconds() / 60
 
+
 # PlayList

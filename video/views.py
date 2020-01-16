@@ -159,7 +159,7 @@ def video_logger(user_id, video_id, activity, tag):
     mycollection = db['video_log']
     if mycollection.find({'user_id': user_id}).count() > 0:
         print('true')
-        print('usename found in document ')
+        print('username found in document ')
         result = mycollection.update({
             'user_id': user_id
         }, {

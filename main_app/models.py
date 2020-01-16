@@ -1,15 +1,9 @@
 import datetime
-from rest_framework.authtoken.models import Token
-
 from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser
 )
 from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.utils.timezone import utc
-
-from Auth import settings
 
 
 class UserManager(BaseUserManager):
@@ -19,6 +13,7 @@ class UserManager(BaseUserManager):
         Creates and saves a User with the given email and password.
         """
         if not phone:
+            print('user must need phone number')
             raise ValueError('Users must have an phone')
 
         user = self.model(
@@ -34,6 +29,7 @@ class UserManager(BaseUserManager):
         Creates and saves a User with the given email and password.
         """
         if not phone:
+            print('user must have phone number')
             raise ValueError('Users must have an phone')
 
         user = self.model(
@@ -111,13 +107,12 @@ class User(AbstractBaseUser):
         verbose_name='likes',
         max_length=255,
         null=True,
-        default=""
     )
     dislikes = models.CharField(
         verbose_name='dislikes',
         max_length=255,
         null=True,
-        default=""
+
     )
 
     active = models.BooleanField(default=True)
@@ -125,7 +120,7 @@ class User(AbstractBaseUser):
     admin = models.BooleanField(default=False)  # a superuser
 
     USERNAME_FIELD = 'phone'
-    REQUIRED_FIELDS = []  # Email & Password are required by default.
+    REQUIRED_FIELDS = ['username']  # phone & Password are required by default.
 
     objects = UserManager()
 
@@ -138,6 +133,10 @@ class User(AbstractBaseUser):
         "Does the user have permissions to view the app `app_label`?"
         # Simplest possible answer: Yes, always
         return True
+
+    def __str__(self):
+        return self.username+"  "+self.phone
+
 
 class Otp(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
