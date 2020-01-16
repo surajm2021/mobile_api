@@ -8,3 +8,4 @@ class LanguageSerializer(serializers.HyperlinkedModelSerializer):
         fields = '__all__'
 
 
+
