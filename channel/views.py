@@ -437,7 +437,7 @@ def delete_session(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def delete_vidoe_from_session(request):
+def delete_video_from_session(request):
     video_id = request.POST.get('video_id')
     session_id = request.POST.get('session_id')
     course_id = request.POST.get('course_id')
