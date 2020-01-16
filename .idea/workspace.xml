@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/main_app/serializer.py" description="from .models import Employee" line="0" />
-  </component>
   <component name="ChangeListManager">
     <list default="true" id="96175a81-3396-42bf-9156-d04082a9a98d" name="Default Changelist" comment="">
+<<<<<<< HEAD
       <change beforePath="$PROJECT_DIR$/channel/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/channel/views.py" afterDir="false" />
+=======
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/channel/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/channel/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/channel/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/channel/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_app/serializer.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_app/serializer.py" afterDir="false" />
+>>>>>>> 66493f42423e2c3314e38598c733a89e2cbfb338
     </list>
-    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -21,6 +25,7 @@
       <favorite_root url="file://$PROJECT_DIR$/main_app/views.py" type="psiFile" klass="com.intellij.ide.projectView.impl.nodes.PsiFileNode" />
     </favorites_list>
   </component>
+<<<<<<< HEAD
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="true">
@@ -85,6 +90,8 @@
       </file>
     </leaf>
   </component>
+=======
+>>>>>>> 66493f42423e2c3314e38598c733a89e2cbfb338
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -135,6 +142,7 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+<<<<<<< HEAD
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
@@ -166,43 +174,18 @@
     <option name="width" value="980" />
     <option name="height" value="1050" />
   </component>
+=======
+  <component name="ProjectId" id="1WT5Xo4lvpO8RoDEpin1kDa75Mh" />
+>>>>>>> 66493f42423e2c3314e38598c733a89e2cbfb338
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
-  <component name="ProjectView">
-    <navigator proportions="" version="1">
-      <foldersAlwaysOnTop value="true" />
-    </navigator>
-    <panes>
-      <pane id="ProjectPane">
-        <subPane>
-          <expand>
-            <path>
-              <item name="geniobits_api" type="b2602c69:ProjectViewProjectNode" />
-              <item name="geniobits_api" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="geniobits_api" type="b2602c69:ProjectViewProjectNode" />
-              <item name="geniobits_api" type="462c0819:PsiDirectoryNode" />
-              <item name="channel" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="geniobits_api" type="b2602c69:ProjectViewProjectNode" />
-              <item name="geniobits_api" type="462c0819:PsiDirectoryNode" />
-              <item name="main_app" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="geniobits_api" type="b2602c69:ProjectViewProjectNode" />
-              <item name="geniobits_api" type="462c0819:PsiDirectoryNode" />
-              <item name="video" type="462c0819:PsiDirectoryNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
-      <pane id="Scope" />
-    </panes>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
@@ -210,18 +193,6 @@
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\suraj\PycharmProjects\geniobits_api\media" />
     </key>
-  </component>
-  <component name="RunDashboard">
-    <option name="ruleStates">
-      <list>
-        <RuleState>
-          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
-        </RuleState>
-        <RuleState>
-          <option name="name" value="StatusDashboardGroupingRule" />
-        </RuleState>
-      </list>
-    </option>
   </component>
   <component name="RunManager" selected="Python.all_languages">
     <configuration name="all_languages" type="PythonConfigurationType" factoryName="Python" temporary="true">
@@ -236,6 +207,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/video/all_languages.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -257,6 +229,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main_app/test.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -278,6 +251,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/video/views.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -295,6 +269,18 @@
       </list>
     </recent_temporary>
   </component>
+  <component name="ServiceViewManager">
+    <option name="viewStates">
+      <list>
+        <serviceView>
+          <treeState>
+            <expand />
+            <select />
+          </treeState>
+        </serviceView>
+      </list>
+    </option>
+  </component>
   <component name="StructureViewFactory">
     <option name="AUTOSCROLL_MODE" value="false" />
   </component>
@@ -308,9 +294,11 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1577304318660</updated>
+      <workItem from="1579160787174" duration="1371000" />
     </task>
     <servers />
   </component>
+<<<<<<< HEAD
   <component name="TodoView">
     <todo-panel id="selected-file">
       <is-autoscroll-to-source value="true" />
@@ -361,6 +349,10 @@
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info active="true" anchor="right" x="1213" y="128" width="263" height="347" id="Structure" order="3" sideWeight="0.48554912" visible="true" weight="0.15817694" />
     </layout-to-restore>
+=======
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+>>>>>>> 66493f42423e2c3314e38598c733a89e2cbfb338
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -375,14 +367,10 @@
           <line>252</line>
           <option name="timeStamp" value="2" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/main_app/views.py</url>
-          <line>2</line>
-          <option name="timeStamp" value="3" />
-        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
+<<<<<<< HEAD
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/Auth/urls.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -675,4 +663,6 @@
       </provider>
     </entry>
   </component>
+=======
+>>>>>>> 66493f42423e2c3314e38598c733a89e2cbfb338
 </project>

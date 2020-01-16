@@ -354,84 +354,159 @@ def update_or_create_course_session(request):
 @permission_classes([AllowAny])
 def delete_session(request):
     data = {}
-    if request.method == "POST":
-        token = request.POST.get('token')
-        session_id = request.POST.get('session_id')
-        course_id = request.POST.get('course_id')
-        if session_id is None or course_id is None:
-            message = 'session id and course id required to delete session.'
-            error = 'True'
-            data = {'message ': message, 'error': error}
-            logger_history_function(token, message)
-        elif Token.objects.filter(key=token):
-            token_obj = Token.objects.get(key=token)
-            user = token_obj.user
-            if user.is_verify:
-                if not channel_model.objects.filter(id=user.channel_id):
-                    message = 'User has not created channel yet.'
-                    error = 'False'
-                    data = {'message ': message, 'error': error}
-                    logger_history_function(token, message)
-                elif course.objects.filter(id=course_id).exists():
-                    course_obj = course.objects.get(id=course_id)
-                    channel_obj = channel_model.objects.get(id=user.channel_id)
-                    courses_id_list = (channel_obj.courses_id).split(",")
-                    print(courses_id_list)
-                    if course_id in courses_id_list:
-                        if not course_obj.session_id is None:
-                            print(course_obj.session_id)
-                            session_id_in_list = (course_obj.session_id).split(",")
-                            print(course_obj.session_id)
-                            print(session_id_in_list)
-                            session_delete_successful = False
-                            for course_session_id in session_id_in_list:
-                                if session_id == '':
-                                    pass
-                                if course_session_id == session_id:
-                                    if course_session.objects.filter(id=session_id):
-                                        session_obj = course_session.objects.get(id=session_id)
-                                        session_obj.delete()
-                                        print(session_id)
-                                        course_session_list = course_obj.session_id.split(",")
-                                        print(str(session_id))
-                                        print(course_session_list)
-                                        course_session_list.remove(str(session_id))
-                                        course_session_list = ",".join(course_session_list)
-                                        course_obj.session_id = course_session_list
-                                        print(course_session_list)
-                                        print('-----------------------')
-                                        # print(channel_course_id)
-                                        course_obj.save()
-                                        session_delete_successful = True
-                            if session_delete_successful:
-                                message = 'session  delete  successfully'
-                                error = 'False'
-                                data = {'message ': message, 'error': error}
-                            else:
-                                message = 'session not found'
-                                error = 'True'
-                                data = {'message ': message, 'error': error}
+    token = request.POST.get('token')
+    session_id = request.POST.get('session_id')
+    course_id = request.POST.get('course_id')
+    if session_id is None or course_id is None:
+        message = 'session id and course id required to delete session.'
+        error = 'True'
+        data = {'message ': message, 'error': error}
+        logger_history_function(token, message)
+    elif Token.objects.filter(key=token):
+        token_obj = Token.objects.get(key=token)
+        user = token_obj.user
+        if user.is_verify:
+            if not channel_model.objects.filter(id=user.channel_id):
+                message = 'User has not created channel yet.'
+                error = 'False'
+                data = {'message ': message, 'error': error}
+                logger_history_function(token, message)
+            elif course.objects.filter(id=course_id).exists():
+                course_obj = course.objects.get(id=course_id)
+                channel_obj = channel_model.objects.get(id=user.channel_id)
+                courses_id_list = (channel_obj.courses_id).split(",")
+                print(courses_id_list)
+                if course_id in courses_id_list:
+                    if not course_obj.session_id is None:
+                        print(course_obj.session_id)
+                        session_id_in_list = (course_obj.session_id).split(",")
+                        print(course_obj.session_id)
+                        print(session_id_in_list)
+                        session_delete_successful = False
+                        for course_session_id in session_id_in_list:
+                            if session_id == '':
+                                pass
+                            if course_session_id == session_id:
+                                if course_session.objects.filter(id=session_id):
+                                    session_obj = course_session.objects.get(id=session_id)
+                                    session_obj.delete()
+                                    print(session_id)
+                                    course_session_list = course_obj.session_id.split(",")
+                                    print(str(session_id))
+                                    print(course_session_list)
+                                    course_session_list.remove(str(session_id))
+                                    course_session_list = ",".join(course_session_list)
+                                    course_obj.session_id = course_session_list
+                                    print(course_session_list)
+                                    print('-----------------------')
+                                    # print(channel_course_id)
+                                    course_obj.save()
+                                    session_delete_successful = True
+                        if session_delete_successful:
+                            message = 'session  delete  successfully'
+                            error = 'False'
+                            data = {'message ': message, 'error': error}
                         else:
-                            message = 'course has no session found'
+                            message = 'session not found'
                             error = 'True'
                             data = {'message ': message, 'error': error}
                     else:
-                        message = 'course not created this user'
+                        message = 'course has no session found'
                         error = 'True'
                         data = {'message ': message, 'error': error}
                 else:
-                    message = 'channel not found first create or course is not belong to user channel'
+                    message = 'course not created this user'
                     error = 'True'
                     data = {'message ': message, 'error': error}
             else:
-                message = 'phone number not verify first verify your phone number'
+                message = 'channel not found first create or course is not belong to user channel'
                 error = 'True'
                 data = {'message ': message, 'error': error}
-                logger_history_function(token, message)
-        else:  # if  Token not found in database means user not exit
-            message = 'token not found'
+        else:
+            message = 'phone number not verify first verify your phone number'
             error = 'True'
             data = {'message ': message, 'error': error}
+            logger_history_function(token, message)
+    else:  # if  Token not found in database means user not exit
+        message = 'token not found'
+        error = 'True'
+        data = {'message ': message, 'error': error}
     return Response(data)
 
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def delete_vidoe_from_session(request):
+    video_id = request.POST.get('video_id')
+    session_id = request.POST.get('session_id')
+    course_id = request.POST.get('course_id')
+    token = request.POST.get('token')
+    if session_id is None or course_id is None:
+        message = 'session id and course id required to delete session.'
+        error = 'True'
+        data = {'message ': message, 'error': error}
+        logger_history_function(token, message)
+    elif Token.objects.filter(key=token):
+        token_obj = Token.objects.get(key=token)
+        user = token_obj.user
+        if user.is_verify:
+            if not channel_model.objects.filter(id=user.channel_id):
+                message = 'User has not created channel yet.'
+                error = 'False'
+                data = {'message ': message, 'error': error}
+                logger_history_function(token, message)
+            elif course.objects.filter(id=course_id).exists():
+                course_obj = course.objects.get(id=course_id)
+                channel_obj = channel_model.objects.get(id=user.channel_id)
+                courses_id_list = channel_obj.courses_id.split(",")
+                print(courses_id_list)
+                if course_id in courses_id_list:
+                    if not course_obj.session_id is None:
+                        print(course_obj.session_id)
+                        session_id_in_list = course_obj.session_id.split(",")
+                        print(course_obj.session_id)
+                        print(session_id_in_list)
+                        session_delete_successful = False
+                        for course_session_id in session_id_in_list:
+                            if session_id == '':
+                                pass
+                            if course_session_id == session_id:
+                                if course_session.objects.filter(id=session_id):
+                                    session_obj = course_session.objects.get(id=session_id)
+                                    video_ids = session_obj.video_id
+                                    video_ids = video_ids.split(",")
+                                    if video_id in video_ids:
+                                        video_ids.remove(video_id)
+                                    session_obj.video_id = ",".join(video_ids)
+                                    session_obj.save()
+                                    video_delete_successful = True
+                        if video_delete_successful:
+                            message = 'video  deleted from session successfully'
+                            error = 'False'
+                            data = {'message ': message, 'error': error}
+                        else:
+                            message = 'session not found'
+                            error = 'True'
+                            data = {'message ': message, 'error': error}
+                    else:
+                        message = 'course has no session found'
+                        error = 'True'
+                        data = {'message ': message, 'error': error}
+                else:
+                    message = 'course not created this user'
+                    error = 'True'
+                    data = {'message ': message, 'error': error}
+            else:
+                message = 'channel not found first create or course is not belong to user channel'
+                error = 'True'
+                data = {'message ': message, 'error': error}
+        else:
+            message = 'phone number not verify first verify your phone number'
+            error = 'True'
+            data = {'message ': message, 'error': error}
+            logger_history_function(token, message)
+    else:  # if  Token not found in database means user not exit
+        message = 'token not found'
+        error = 'True'
+        data = {'message ': message, 'error': error}
+    return Response(data)

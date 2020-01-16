@@ -9,4 +9,5 @@ urlpatterns = [
     path('update_or_create_course_session/', views.update_or_create_course_session, name='update_course_session'),
     path('delete_course/', views.delete_course, name='delete_course'),
     path('delete_session/', views.delete_session, name='delete_session'),
+    path('delete_vidoe_from_session/', views.delete_vidoe_from_session, name='delete_vidoe_from_session'),
 ]
