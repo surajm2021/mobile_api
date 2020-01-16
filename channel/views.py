@@ -434,7 +434,6 @@ def delete_session(request):
     return Response(data)
 
 
-
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def delete_video_from_session(request):
