@@ -435,14 +435,3 @@ def delete_session(request):
     return Response(data)
 
 
-def position(temp_video_id_in_session, video_id, video_position):
-    temp_video_id_in_session_list = temp_video_id_in_session.split(',')
-    if video_id in temp_video_id_in_session_list:
-        temp_video_id_in_session_list.remove(video_id)
-    if len(temp_video_id_in_session_list) < int(video_position):
-        temp_video_id_in_session_list.insert(int(video_position) - 1, video_id)
-    else:
-        temp_video_id_in_session_list.append(video_id)
-    temp_video_id_in_session = ",".join(temp_video_id_in_session_list)
-    print(temp_video_id_in_session)
-    return temp_video_id_in_session
